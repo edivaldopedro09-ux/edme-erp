@@ -8,7 +8,7 @@ import companyRoutes from './routes/companyRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import saleRoutes from './routes/saleRoutes.js';
 import financeRoutes from './routes/financeRoutes.js';
-
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
 dotenv.config();
 
 const app = express();
@@ -26,6 +26,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 app.get('/', (req, res) => {
   res.send('API EDME ERP Online e Operacional!');

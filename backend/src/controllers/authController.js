@@ -18,6 +18,7 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // O novo utilizador nasce com role 'USER', maxCompanies: 1 e plano grátis
     const user = await User.create({
       name,
       email,
@@ -28,7 +29,15 @@ export const register = async (req, res) => {
     res.status(201).json({
       message: 'Utilizador registado com sucesso!',
       token: generateToken(user._id),
-      user: { id: user._id, name: user.name, email: user.email, phone: user.phone }
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        phone: user.phone,
+        role: user.role,
+        maxCompanies: user.maxCompanies,
+        currentPlan: user.currentPlan
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Erro no servidor ao registar utilizador.', error: error.message });
@@ -52,9 +61,30 @@ export const login = async (req, res) => {
     res.json({
       message: 'Login efectuado com sucesso!',
       token: generateToken(user._id),
-      user: { id: user._id, name: user.name, email: user.email, phone: user.phone }
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        phone: user.phone,
+        role: user.role,
+        maxCompanies: user.maxCompanies,
+        currentPlan: user.currentPlan
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Erro no servidor ao fazer login.', error: error.message });
+  }
+};
+
+// NOVA FUNÇÃO: Retorna os dados atualizados do utilizador logado (incluindo maxCompanies alterado pelo admin)
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'Utilizador não encontrado.' });
+    }
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao buscar dados do utilizador.', error: error.message });
   }
 };

@@ -11,6 +11,9 @@ import Products from './pages/Products';
 import Sales from './pages/Sales';
 import SalesHistory from './pages/SalesHistory';
 import FinanceHub from './pages/FinanceHub';
+import Plans from './pages/Plans';          // Nova página de planos e upload de comprovativo
+import AdminPanel from './pages/AdminPanel'; // Novo painel restrito do SuperAdmin
+
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
   return user ? children : <Navigate to="/login" replace />;
@@ -21,6 +24,15 @@ const PublicRoute = ({ children }) => {
   return !user ? children : <Navigate to="/companies" replace />;
 };
 
+// Componente para proteger rotas exclusivas do SuperAdmin
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user || user.role !== 'SUPERADMIN') {
+    return <Navigate to="/companies" replace />;
+  }
+  return children;
+};
+
 export default function App() {
   return (
     <AuthProvider>
@@ -28,14 +40,23 @@ export default function App() {
         <BrowserRouter>
           <PlanLockModal />
           <Routes>
+            {/* Rotas Públicas */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+            {/* Rotas Privadas (Utilizadores Autenticados) */}
             <Route path="/companies" element={<PrivateRoute><MyCompanies /></PrivateRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
             <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
             <Route path="/invoices" element={<PrivateRoute><SalesHistory /></PrivateRoute>} />
             <Route path="/finance" element={<PrivateRoute><FinanceHub /></PrivateRoute>} />
+            
+            {/* Novas Rotas SaaS */}
+            <Route path="/planos" element={<PrivateRoute><Plans /></PrivateRoute>} />
+            <Route path="/admin/subscricoes" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+
+            {/* Redirecionamento por defeito */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </BrowserRouter>

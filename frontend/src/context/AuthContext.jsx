@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext();
@@ -8,6 +8,28 @@ export const AuthProvider = ({ children }) => {
     const saved = localStorage.getItem('edme_user');
     return saved ? JSON.parse(saved) : null;
   });
+
+  // Sincroniza os dados do utilizador (plano, maxCompanies, role) com o servidor ao abrir a app
+  const refreshUser = async () => {
+    const token = localStorage.getItem('edme_token');
+    if (!token) return;
+
+    try {
+      const { data } = await api.get('/auth/me'); // Certifique-se de ter esta rota no backend
+      const updatedUser = data.user || data;
+      localStorage.setItem('edme_user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (error) {
+      // Se o token expirou ou for inválido, limpa a sessão
+      if (error.response?.status === 401) {
+        logout();
+      }
+    }
+  };
+
+  useEffect(() => {
+    refreshUser();
+  }, []);
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
@@ -31,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
