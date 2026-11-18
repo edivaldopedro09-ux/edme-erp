@@ -76,7 +76,6 @@ export const login = async (req, res) => {
   }
 };
 
-// NOVA FUNÇÃO: Retorna os dados atualizados do utilizador logado (incluindo maxCompanies alterado pelo admin)
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
